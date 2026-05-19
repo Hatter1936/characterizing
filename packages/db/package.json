@@ -1,0 +1,25 @@
+{
+  "name": "@characterizing/db",
+  "version": "1.0.0",
+  "description": "Prisma database package for Characterizing",
+  "main": "src/index.ts",
+  "scripts": {
+    "generate": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:5432/characterizing?sslmode=disable\" prisma generate",
+    "push": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:5432/characterizing?sslmode=disable\" prisma db push",
+    "migrate:dev": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:5432/characterizing?sslmode=disable\" prisma migrate dev",
+    "migrate:deploy": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:5432/characterizing?sslmode=disable\" prisma migrate deploy",
+    "studio": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:5432/characterizing?sslmode=disable\" prisma studio",
+    "db:reset": "cross-env DATABASE_URL=\"postgresql://postgres:postgres@127.0.0.1:5432/characterizing?sslmode=disable\" prisma migrate reset --force"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "prisma": "^6.19.3"
+  }
+}
