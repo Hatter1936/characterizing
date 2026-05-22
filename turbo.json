@@ -3,6 +3,7 @@
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
     "dev": {
+      "dependsOn": ["db:generate"],
       "cache": false,
       "persistent": true
     },
@@ -14,6 +15,9 @@
       "dependsOn": ["^lint"]
     },
     "clean": {
+      "cache": false
+    },
+    "db:generate": {
       "cache": false
     }
   }

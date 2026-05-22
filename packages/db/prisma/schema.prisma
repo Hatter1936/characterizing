@@ -8,9 +8,139 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid())
+  universe       Universe[]
+  template       Template[]
+  session        Session[]
+  character      Character[]
+  email          String   @unique
+  passwordHash   String   @map("password_hash")
+  name           String?
+  avatarUrl      String?  @map("avatar_url")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Session {
+  id             String     @id @default(uuid())
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String     @map("user_id")
+  token          String     @unique
+  createdAt      DateTime   @default(now()) @map("created_at")
+  expiresAt      DateTime   @map("expires_at")
+
+  @@map("sessions")
+}
+
+model Template {
+  id             String     @id @default(uuid())
+  user           User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?    @map("user_id")
+  name           String
+  fields         Json
+  isDefault      Boolean    @map("is_default") @default(false)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@map("templates")
+}
+
+model Universe {
+  id             String     @id @default(uuid())
+  relationship   Relationship[]
+  character      Character[]
+  chapter        Chapter[]
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String     @map("user_id")
+  name           String
+  description    String?
+  coverImageUrl  String?    @map("cover_image_url")
+  isPublic       Boolean    @map("is_public") @default(false)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  @@map("universes")
+}
+
+model Chapter {
+  id             String     @id @default(uuid())
+  appearance     Appearance[]
+  universe       Universe   @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  universeId     String     @map("universe_id")
+  title          String
+  order          Int?
+  volume         Int?
+  description    String?
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@unique([universeId, order])
+  @@map("chapters")
+}
+
+model Character {
+  id               String         @id @default(uuid())
+  appearance       Appearance[]
+  customField      CustomField[]
+  relationshipFrom Relationship[] @relation("FromCharacter")
+  relationshipTo   Relationship[] @relation("ToCharacter")
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String         @map("user_id")
+  universe         Universe?      @relation(fields: [universeId], references: [id], onDelete: SetNull)
+  universeId       String?        @map("universe_id")
+  name             String
+  surname          String?
+  description      String?
+  age              Int?
+  height           Int?
+  weight           Int?
+  character        String?
+  imageUrl         String?        @map("image_url") 
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@map("characters")
+}
+
+model Relationship {
+  id                String     @id @default(uuid())
+  universe          Universe   @relation(fields: [universeId], references: [id], onDelete: Cascade)
+  universeId        String     @map("universe_id")
+  fromCharacter     Character  @relation("FromCharacter", fields: [fromCharacterId], references: [id], onDelete: Cascade)
+  fromCharacterId   String     @map("from_character_id")
+  toCharacter       Character  @relation("ToCharacter", fields: [toCharacterId], references: [id], onDelete: Cascade)
+  toCharacterId     String     @map("to_character_id")
+  relationshipType  String     @map("relationship_type")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  @@map("relationships")
+}
+
+model CustomField {
+  id             String     @id @default(uuid())
+  character      Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  characterId    String     @map("character_id")
+  fieldName      String     @map("field_name")
+  fieldType      String     @map("field_type")
+  fieldValue     String     @map("field_value")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@map("custom_fields")
+}
+
+model Appearance {
+  id             String     @id @default(uuid())
+  character      Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  characterId    String     @map("character_id")
+  chapter        Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId      String     @map("chapter_id")
+  notes          String?
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  @@unique([characterId,chapterId])
+  @@map("appearances")
 }

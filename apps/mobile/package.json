@@ -1,5 +1,5 @@
 {
-  "name": "mobile",
+  "name": "@characterizing/mobile",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "dependencies": {
+    "dependencies": {
     "expo": "~55.0.24",
     "expo-status-bar": "~55.0.6",
     "nativewind": "^4.2.4",
@@ -17,5 +17,9 @@
     "tailwind": "^4.0.0",
     "tailwindcss-react-native": "^1.7.10"
   },
-  "private": true
+
+  "private": true,
+  "devDependencies": {
+    "@expo/ngrok": "^4.1.3"
+  }
 }
