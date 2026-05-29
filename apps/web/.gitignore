@@ -1,0 +1,7 @@
+# apps/web/.gitignore
+.next/
+out/
+public/*.js
+public/*.css
+public/tailwind-*
+node_modules/

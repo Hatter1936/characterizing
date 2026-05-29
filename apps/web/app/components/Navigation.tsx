@@ -8,9 +8,7 @@ export default function Navigation() {
         <Link href="/universes">Вселенные</Link>
         <input type="text" id="search" name="search" />
         <Link href="/characters/create">Создать персонажа</Link>
-        <img></img>
-        <Link href="/login">Login</Link>
-        <Link href="/register">Register</Link>
+        <img className="w-8 h-8 rounded-full border border-solid border-black-600" />
       </nav>
   );
 }
