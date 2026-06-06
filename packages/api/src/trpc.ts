@@ -34,7 +34,7 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
 }
 
 // тип процедуры
-type Context = Awaited<ReturnType<typeof createContext>>
+export type Context = Awaited<ReturnType<typeof createContext>>
 // контекст
 const t = initTRPC.context<Context>().create()
 // пока низнаю
