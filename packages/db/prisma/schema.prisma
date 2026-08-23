@@ -92,9 +92,9 @@ model Character {
   name             String
   surname          String?
   description      String?
-  age              Int?
-  height           Int?
-  weight           Int?
+  age              Float?
+  height           Float?
+  weight           Float?
   character        String?
   imageUrl         String?        @map("image_url") 
   createdAt        DateTime       @default(now()) @map("created_at")
