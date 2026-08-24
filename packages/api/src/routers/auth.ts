@@ -120,7 +120,6 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
 
     ctx.resHeaders.token = token
     return {
-        success: true,
         token,
         user: {
             id: userExist.id,

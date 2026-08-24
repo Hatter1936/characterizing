@@ -14,9 +14,6 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
     const cookies = cookie.parse(rawCookies)
     const token = cookies.token
 
-    console.log('cookies: ', rawCookies)
-    console.log('token: ', token)
-
     // далее - проверяем jwt токен
     if (token){
         try {
