@@ -65,7 +65,7 @@ export const update = protectedProcedure.input(updateSchema).mutation( async ({ 
     const { id, fieldName, fieldType, fieldValue } = input
     
     const customField = await ctx.prisma.customField.findUnique({
-        where: { id: input.id }
+        where: { id: id }
     })
 
     if (!customField) {
@@ -81,7 +81,7 @@ export const update = protectedProcedure.input(updateSchema).mutation( async ({ 
     }
 
     const updated = await ctx.prisma.customField.update({
-        where: { id: input.id },
+        where: { id: id },
         data: { fieldName, fieldType, fieldValue }
     })
 
