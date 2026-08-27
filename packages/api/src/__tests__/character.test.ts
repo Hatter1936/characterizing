@@ -1,5 +1,6 @@
 import { describe, test, expect, jest, beforeEach } from '@jest/globals'
 import { appRouter } from '../index'
+import { getPublic } from '../routers/character'
 
 function createMockContext() {
   return {
@@ -86,5 +87,24 @@ describe('character', () => {
         id: 'new-character-id'
       })
     ).rejects.toThrow('Character not found.')
+  })
+
+  //Тест 5: Публичная карточка персонажа возвращает без авторизации
+  test('get public character пользователь не авторизован', async () => {
+    ctx.user = null
+
+    ctx.prisma.character.findUnique.mockResolvedValue({
+        id: 'new-character-id',
+        name: 'Public Character Name'
+    })
+
+    const unauthorizedCaller = appRouter.createCaller(ctx)
+
+    const result = await unauthorizedCaller.character.getPublic({
+      id: 'new-character-id'
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.character.name).toBe('Public Character Name')
   })
 })

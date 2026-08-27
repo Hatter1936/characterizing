@@ -1,7 +1,6 @@
 import { z } from 'zod'
-import { protectedProcedure } from '../trpc'
+import { protectedProcedure, publicProcedure } from '../trpc'
 import { TRPCError } from '@trpc/server'
-import { Prisma } from '@prisma/client'
 
 const createSchema = z.object({
     name: z
@@ -122,6 +121,36 @@ export const getById = protectedProcedure.input(getByIdSchema).query( async ({ i
     return {
         success: true,
         character,
+    }
+})
+
+export const getPublic = publicProcedure.input(getByIdSchema).query( async ({ input, ctx }) => {
+    const character = await ctx.prisma.character.findUnique({
+        where: { id: input.id }
+    })
+
+    if (!character) {
+        throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Character not found.'
+        })
+    }
+
+    const resultCharacter = {
+        id: input.id,
+        name: character.name,
+        surname: character.surname,
+        description: character.description,
+        age: character.age,
+        height: character.height,
+        weight: character.weight,
+        character: character.character,
+        imageUrl: character.imageUrl
+    }
+
+    return {
+        success: true,
+        character: resultCharacter
     }
 })
 
