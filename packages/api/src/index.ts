@@ -3,6 +3,7 @@ import { register, login, logout, me } from './routers/auth'
 import { create, list, getById, update, remove } from './routers/universe'
 import { create as createCharacter, list as listCharacter, getById as getByIdCharacter, update as updateCharacter, remove as removeCharacter } from './routers/character'
 import {create as createCustomField, update as updateCustomField, remove as removeCustomField } from './routers/customField'
+import { create as createTemplate, list as listTemplate } from './routers/template'
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -32,6 +33,10 @@ export const appRouter = router({
     create: createCustomField,
     update: updateCustomField,
     remove: removeCustomField,
+  }),
+  template: router({
+    create: createTemplate,
+    list: listTemplate,
   }),
 })
 
