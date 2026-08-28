@@ -5,7 +5,9 @@ const config: Config = {
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@characterizing/db$': '<rootDir>/../db/src/index.ts',
+    '^puppeteer$': '<rootDir>/src/__mocks__/puppeeter.js',
   },
 }
+
 
 export default config
