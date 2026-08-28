@@ -55,7 +55,7 @@ export const importJson = protectedProcedure.input(importSchema).mutation( async
         })
     }
 
-    const newCharacter = await ctx.prisma.$transaction(async (tx) => {
+    const newCharacter = await ctx.prisma.$transaction(async (tx: any) => {
         const pers = parsedData.character
 
         if (!pers) {
