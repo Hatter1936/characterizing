@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { protectedProcedure, publicProcedure } from '../trpc'
 import { TRPCError } from '@trpc/server'
+import { generateCharacterHtml } from '../utils/generateCharacterCard'
+import { characterToPng, characterToPdf } from '../utils/exportCharacterCard'
 
 const createSchema = z.object({
     name: z
@@ -291,5 +293,66 @@ export const remove = protectedProcedure.input(deleteSchema).mutation( async ({ 
 
     return {
         success: true
+    }
+})
+
+const exportSchema = z.object({
+    id: z
+        .string({ required_error: 'ID id required.' }),
+})
+
+export const exportPng = protectedProcedure.input(exportSchema).query( async ({ input, ctx }) => {
+    const { id } = input
+
+    const character = await ctx.prisma.character.findUnique({
+        where: { id: id }
+    })
+
+    if (!character || character.userId != ctx.user.id) {
+        throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Character not found.'
+        })
+    }
+
+    const customFields = await ctx.prisma.customField.findMany({
+        where: { characterId: character.id }
+    })
+
+    const html = generateCharacterHtml(character, customFields)
+    const pngBuffer = await characterToPng(html)
+    const base64 = pngBuffer.toString('base64')
+
+    return {
+        success: true,
+        png: base64,
+    }
+})
+
+export const exportPdf = protectedProcedure.input(exportSchema).query( async ({ input, ctx }) => {
+    const { id } = input
+
+    const character = await ctx.prisma.character.findUnique({
+        where: { id: id }
+    })
+
+    if (!character || character.userId != ctx.user.id) {
+        throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Character not found.'
+        })
+    }
+
+    const customFields = await ctx.prisma.customField.findMany({
+        where: { characterId: character.id }
+    })
+
+    const html = generateCharacterHtml(character, customFields)
+    const pdfBuffer = await characterToPdf(html)
+    const base64 = pdfBuffer.toString('base64')
+
+    return {
+        success: true,
+        pdf: base64,
     }
 })
