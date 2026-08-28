@@ -1,13 +1,22 @@
 import { z } from 'zod'
 import { protectedProcedure } from '../trpc'
 
+const templateFieldItemSchema = z.object({
+    fieldName: z
+        .string()
+        .min(1, 'Field name cannot be empty.'),
+
+    fieldType: z
+        .enum(['text', 'number', 'date'])
+})
+
 const createSchema = z.object({
     name: z
         .string({ required_error: 'Name field is empty.' })
         .min(1),
 
     fields: z
-        .any(),
+        .array(templateFieldItemSchema),
 })
 
 export const create = protectedProcedure.input(createSchema).mutation( async ({ input, ctx }) => {
@@ -16,7 +25,7 @@ export const create = protectedProcedure.input(createSchema).mutation( async ({ 
     const userId = ctx.user.id
 
     const newTemplates = await ctx.prisma.template.create({
-        data: { name, fields, userId }
+        data: { name, fields: fields as any, userId }
     })
 
     return {

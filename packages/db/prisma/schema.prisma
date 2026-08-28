@@ -89,6 +89,7 @@ model Character {
   userId           String         @map("user_id")
   universe         Universe?      @relation(fields: [universeId], references: [id], onDelete: SetNull)
   universeId       String?        @map("universe_id")
+  isPublic         Boolean        @default(false) @map("is_public")
   name             String
   surname          String?
   description      String?

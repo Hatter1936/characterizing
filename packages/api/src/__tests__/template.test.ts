@@ -22,17 +22,19 @@ describe('template', () => {
     })
 
     test('create with autorization', async () => {
+        const mockFields = [{ fieldName: 'Field Name', fieldType: 'text' }]
+
         ctx.prisma.template.create.mockResolvedValue({
             id: 'id-template',
             userId: 'user-id',
             name: 'Template Name',
-            fields: 'Fields',
+            fields: mockFields,
             isDefault: false
         })
 
         const result = await caller.template.create({
-            name: 'Template Name',
-            fields: 'Fields'
+            name: 'Template Name', 
+            fields: mockFields as any
         })
 
         expect(result).toEqual({
@@ -41,7 +43,7 @@ describe('template', () => {
                 id: 'id-template',
                 userId: 'user-id',
                 name: 'Template Name',
-                fields: 'Fields',
+                fields: mockFields,
                 isDefault: false
             }
         })
@@ -49,7 +51,7 @@ describe('template', () => {
         expect(ctx.prisma.template.create).toHaveBeenCalledWith({
             data: {
                 name: 'Template Name',
-                fields: 'Fields',
+                fields: mockFields,
                 userId: 'user-id'
             }
         })
@@ -57,8 +59,8 @@ describe('template', () => {
 
     test('test list', async () => {
         ctx.prisma.template.findMany.mockResolvedValue([
-            { id: '1', userId: 'admin', name: 'Template Default', fields: {}, isDefault: true },
-            { id: '2', userId: 'user', name: 'User Template', fields: {}, isDefault: false }
+            { id: '1', userId: 'admin', name: 'Template Default', fields: [], isDefault: true },
+            { id: '2', userId: 'user', name: 'User Template', fields: [], isDefault: false }
         ])
 
         const result = await caller.template.list()
@@ -66,8 +68,8 @@ describe('template', () => {
         expect(result).toEqual({
             success: true,
             templates: [
-                { id: '1', userId: 'admin', name: 'Template Default', fields: {}, isDefault: true },
-                { id: '2', userId: 'user', name: 'User Template', fields: {}, isDefault: false }
+                { id: '1', userId: 'admin', name: 'Template Default', fields: [], isDefault: true },
+                { id: '2', userId: 'user', name: 'User Template', fields: [], isDefault: false }
             ]
         })
 

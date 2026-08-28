@@ -6,6 +6,7 @@ function createMockContext() {
   return {
     prisma: {
       character: { create: jest.fn(), findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn(), delete: jest.fn(), },
+      universe: { findUnique: jest.fn() },
     },
     user: { id: 'user-id', email: 'test@test.com', name: null, avatarUrl: null },
     resHeaders: {},
@@ -76,7 +77,7 @@ describe('character', () => {
 
   // Тест 4: Удаление не авторизованного пользователя
   test('remove пользователь не авторизован', async () => {
-    ctx.prisma.character.create.mockResolvedValue({
+    ctx.prisma.character.findUnique.mockResolvedValue({
         id: 'new-character-id',
         name: 'Name Character',
         userId: 'alian-user-id'
@@ -95,7 +96,8 @@ describe('character', () => {
 
     ctx.prisma.character.findUnique.mockResolvedValue({
         id: 'new-character-id',
-        name: 'Public Character Name'
+        name: 'Public Character Name',
+        isPublic: true
     })
 
     const unauthorizedCaller = appRouter.createCaller(ctx)
@@ -106,5 +108,31 @@ describe('character', () => {
 
     expect(result.success).toBe(true)
     expect(result.character.name).toBe('Public Character Name')
+  })
+
+  test('create в чужой вселенной', async() => {
+    ctx.prisma.universe.findUnique.mockResolvedValue({
+      id: 'universe-id',
+      userId: 'alien-user-id',
+    })
+
+    await expect(
+      caller.character.create({
+        name: 'Test',
+        universeId: 'universe-id',
+      })
+    ).rejects.toThrow('Universe not found or access denied.')
+  })
+
+  test('getPublic не отдаёт приватного персонажа', async() => {
+    ctx.prisma.character.findUnique.mockResolvedValue({
+      id: 'character-id',
+      name: 'Private',
+      isPublic: false
+    })
+
+    await expect(
+      caller.character.getPublic({ id: 'chatacter-id' })
+    ).rejects.toThrow('Character not found.')
   })
 })

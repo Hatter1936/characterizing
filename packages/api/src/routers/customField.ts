@@ -11,7 +11,7 @@ const createSchema = z.object({
         .string(),
 
     fieldType: z
-        .string(),
+        .enum(['text', 'number', 'date']),
 
     fieldValue: z
         .string(),
@@ -53,7 +53,7 @@ const updateSchema = z.object({
         .optional(),
 
     fieldType: z
-        .string()
+        .enum(['text', 'number', 'date'])
         .optional(),
 
     fieldValue: z
@@ -65,19 +65,12 @@ export const update = protectedProcedure.input(updateSchema).mutation( async ({ 
     const { id, fieldName, fieldType, fieldValue } = input
     
     const customField = await ctx.prisma.customField.findUnique({
-        where: { id: id }
+        where: { id: id },
+        include: { character: true }
     })
 
-    if (!customField) {
+    if (!customField || customField.character.userId !== ctx.user.id) {
         throw new TRPCError({ code: 'NOT_FOUND',  message: 'Custom field not found.'})
-    }
-
-    const  character = await ctx.prisma.character.findUnique({
-        where: { id: customField.characterId }
-    })
-
-    if (!character || character.userId !== ctx.user.id) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Character field not found.'})
     }
 
     const updated = await ctx.prisma.customField.update({
@@ -100,21 +93,15 @@ export const remove = protectedProcedure.input(deleteSchema).mutation( async ({ 
     const { id } = input
 
     const customField = await ctx.prisma.customField.findUnique({
-        where: { id: input.id }
+        where: { id: input.id },
+        include: { character: true }
     })
 
-    if (!customField) {
+    if (!customField || customField.character.userId !== ctx.user.id) {
         throw new TRPCError({
             code: 'NOT_FOUND',
-            message: 'customField not found.'
+            message: 'custom field not found.'
         })
-    }
-
-    const  character = await ctx.prisma.character.findUnique({
-        where: { id: customField.characterId }
-    })
-    if (!character || character.userId !== ctx.user.id) {
-        throw new TRPCError({ code: 'NOT_FOUND', message: 'Character field not found.'})
     }
 
     await ctx.prisma.customField.delete({

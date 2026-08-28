@@ -7,6 +7,10 @@ const createSchema = z.object({
         .string({ required_error: 'Name is empty.' })
         .min(1),
 
+    isPublic: z
+        .boolean()
+        .optional(),
+
     universeId: z
         .string()
         .optional(),
@@ -48,12 +52,24 @@ const createSchema = z.object({
 })
 
 export const create = protectedProcedure.input(createSchema).mutation( async ({ input, ctx }) => {
-    const { name, universeId, surname, description, age, height, weight, character, imageUrl } = input
+    const { name, universeId, surname, description, age, height, weight, character, imageUrl, isPublic } = input
 
     const userId = ctx.user.id
 
+    if (universeId) {
+        const universe = await ctx.prisma.universe.findUnique({
+            where: { id: universeId }
+        })
+        if (!universe || universe.userId !== userId) {
+            throw new TRPCError({
+                code: 'FORBIDDEN',
+                message: 'Universe not found or access denied.'
+            })
+        }
+    }
+
     const newCharacter = await ctx.prisma.character.create({
-        data: { name, universeId, surname, description, age, height, weight, character, imageUrl, userId }
+        data: { name, universeId, surname, description, age, height, weight, character, imageUrl, userId, isPublic }
     })
 
     return {
@@ -91,7 +107,12 @@ export const list = protectedProcedure.input(listSchema).query( async ({ input, 
         where: {
             userId: ctx.user.id,
             ...universeId && { universeId },
-            ...name && { name: { contains: name, mode: 'insensitive' } },
+            ...name && { 
+                OR: [
+                    { name: { contains: name, mode: 'insensitive' } },
+                    { surname: { contains: name, mode: 'insensitive' } }
+                ]
+            }
         }
     })
 
@@ -129,7 +150,7 @@ export const getPublic = publicProcedure.input(getByIdSchema).query( async ({ in
         where: { id: input.id }
     })
 
-    if (!character) {
+    if (!character || !character.isPublic) {
         throw new TRPCError({
             code: 'NOT_FOUND',
             message: 'Character not found.'
@@ -161,6 +182,10 @@ const updateSchema = z.object({
     name: z
         .string({ required_error: 'Name is empty.' })
         .min(1),
+
+    isPublic: z
+        .boolean()
+        .optional(),
 
     universeId: z
         .string()
@@ -203,8 +228,10 @@ const updateSchema = z.object({
 })
 
 export const update = protectedProcedure.input(updateSchema).mutation( async ({ input, ctx }) => {
-    const { id, name, universeId, surname, description, age, height, weight, character, imageUrl } = input
+    const { id, name, universeId, surname, description, age, height, weight, character, imageUrl,  isPublic } = input
    
+    const userId = ctx.user.id
+
     const updateCharacter = await ctx.prisma.character.findUnique({
         where: { id: id }
     })
@@ -216,9 +243,21 @@ export const update = protectedProcedure.input(updateSchema).mutation( async ({ 
         })
     }
 
+    if (universeId) {
+        const universe = await ctx.prisma.universe.findUnique({
+            where: { id: universeId }
+        })
+        if (!universe || universe.userId !== userId) {
+            throw new TRPCError({
+                code: 'FORBIDDEN',
+                message: 'Universe not found or access denied.'
+            })
+        }
+    }
+
     const updated = await ctx.prisma.character.update({
         where: { id },
-        data: { name, universeId, surname, description, age, height, weight, character, imageUrl }
+        data: { name, universeId, surname, description, age, height, weight, character, imageUrl, isPublic }
     })
 
     return {

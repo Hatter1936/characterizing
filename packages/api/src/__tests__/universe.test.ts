@@ -78,7 +78,7 @@ describe('universe', () => {
 
   // Тест 4: Удаление не авторизованного пользователя
   test('remove пользователь не авторизован', async () => {
-    ctx.prisma.universe.create.mockResolvedValue({
+    ctx.prisma.universe.findUnique.mockResolvedValue({
         id: 'new-universe-id',
         name: 'Name Universe',
         userId: 'alian-user-id'

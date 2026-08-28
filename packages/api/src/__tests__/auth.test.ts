@@ -8,8 +8,9 @@ function createMockContext() {
       user: { findUnique: jest.fn(), create: jest.fn(), },
       session: { create: jest.fn(), findUnique: jest.fn(), delete: jest.fn(), },
     },
-    user: null,
-    resHeaders: {},
+    user: { id: 'user-id', email: 'test@test.com', name: null, avatarUrl: null },
+    resHeaders: {} as Record<string, string>,
+    token: undefined as string | undefined
   } as any
 }
 
@@ -82,7 +83,8 @@ describe('auth', () => {
     })
 
     expect(result.success).toBe(true)
-    expect(result.token).toBe('fake-jwt-token')
+    expect(result.user.id).toBe('user-id')
+    expect(ctx.resHeaders.token).toBeDefined()
   })
 
   test('login неверный пароль', async () => {
@@ -112,27 +114,24 @@ describe('auth', () => {
   })
 
   test('logout выходит', async () => {
-    ctx.prisma.session.findUnique.mockResolvedValue({ id: 'session-id', token: 'exist-token', userId: 'user-id', })
-    ctx.prisma.session.delete.mockResolvedValue({ id: 'session-id', token: 'exist-token', })
+    ctx.token = 'exist-token'
+    ctx.prisma.session.findUnique.mockResolvedValue({ token: 'exist-token' })
+    ctx.prisma.session.delete.mockResolvedValue({ token: 'exist-token' })
 
-    const result = await caller.auth.logout({
-      token: 'exist-token',
-    })
+    const result = await caller.auth.logout()
 
-    expect(result.success).toBe(true)
+    expect(result).toEqual({ success: true})
     expect(ctx.prisma.session.delete).toHaveBeenCalledWith({
       where: { token: 'exist-token' }
     })
+    expect(ctx.resHeaders['Set-Cookie']).toBeDefined()
   })
 
   test('logout не находит сессию', async () => {
+    ctx.token = 'notexistist-token'
     ctx.prisma.session.findUnique.mockResolvedValue(null)
 
-    await expect(
-      caller.auth.logout({
-        token: 'notexistist-token',
-      })
-    ).rejects.toThrow('Session not found.')
+    await expect(caller.auth.logout()).rejects.toThrow('Session not found.')
   })
 
   test('me авторизован', async () => {
@@ -151,8 +150,21 @@ describe('auth', () => {
   })
 
   test('me не авторизован', async () => {
+    ctx.user = null
+    const unauthorizedCaller = appRouter.createCaller(ctx)
     await expect(
       caller.auth.me()
     ).rejects.toThrow()
+  })
+
+  test('expired session неавторизован', async () => {
+    ctx.user = null
+    const expiredCaller = appRouter.createCaller(ctx)
+    await expect(expiredCaller.auth.me()).rejects.toThrow('User not found')
+  })
+
+  test('logout без токена, неавторизован', async () => {
+    ctx.token = undefined
+    await expect(caller.auth.logout()).rejects.toThrow('Incorrect token.')
   })
 })

@@ -15,19 +15,24 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
     const token = cookies.token
 
     // далее - проверяем jwt токен
-    if (token){
-        try {
-            const payload = jwt.verify(token, process.env.JWT_SECRET!) as {userId: string}
-            if (payload && payload.userId) {
-                user = await prisma.user.findUnique({ 
-                    where: { id: payload.userId } 
-                })
+        if (token){
+            try {
+                const payload = jwt.verify(token, process.env.JWT_SECRET!) as {userId: string}
+                if (payload && payload.userId) {
+                    const sessionData = await prisma.session.findUnique({
+                        where: { token: token },
+                        include: { user: true }
+                    })
+                    
+                    if (sessionData && sessionData.expiresAt > new Date()) {
+                        user = sessionData.user
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка верификации JWT: ', error)
             }
-        } catch (error) {
-            console.error('Ошибка верификации JWT: ', error)
         }
-    }
-    return { prisma, user, resHeaders }
+        return { prisma, user, resHeaders, token }
 }
 
 // тип процедуры

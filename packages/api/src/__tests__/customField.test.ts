@@ -5,7 +5,7 @@ function createMockContext() {
   return {
     prisma: {
       character: { findUnique: jest.fn() },
-      customField: { create: jest.fn(), update: jest.fn(), remove: jest.fn(), }
+      customField: { create: jest.fn(), update: jest.fn(), delete: jest.fn(), }
     },
     user: { id: 'user-id', email: 'test@test.com', name: null, avatarUrl: null },
     resHeaders: {},
@@ -27,7 +27,7 @@ describe('customField', () => {
       id: 'new-customField-id',
       characterId: 'character-id',
       fieldName: 'Field Name',
-      fieldType: 'field-type',
+      fieldType: 'text',
       fieldValue: 'field-value'
     })
 
@@ -39,7 +39,7 @@ describe('customField', () => {
     const result = await caller.customField.create({
       characterId: 'character-id',
       fieldName: 'Field Name',
-      fieldType: 'field-type',
+      fieldType: 'text',
       fieldValue: 'field-value',
     })
 
@@ -55,7 +55,18 @@ describe('customField', () => {
       unauthorizedCaller.customField.create({
         characterId: 'character-id',
         fieldName: 'Field Name',
-        fieldType: 'field-type',
+        fieldType: 'text',
+        fieldValue: 'field-value',
+      })
+    ).rejects.toThrow()
+  })
+
+  test('create с невалидным fieldType', async () => {
+    await expect(
+      caller.customField.create({
+        characterId: 'character-id',
+        fieldName: 'Field Name',
+        fieldType: 'banana' as any,
         fieldValue: 'field-value',
       })
     ).rejects.toThrow()

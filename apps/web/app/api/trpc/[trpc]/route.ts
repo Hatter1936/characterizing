@@ -9,7 +9,7 @@ const handler = async (req: Request) => {
     router: appRouter,
     createContext,
     responseMeta(opts) {
-      const token = opts.data?.[0]?.result?.data?.token
+      const token = opts.ctx?.resHeaders?.token
       if (token) {
         return {
           headers: {
@@ -18,20 +18,8 @@ const handler = async (req: Request) => {
         }
       }
       return {}
-  },
-})
-
-  const cloned = response.clone()
-  const body = await cloned.json()
-
-  if (body?.result?.data?.token) {
-    delete body.result.data.token
-    return new Response(JSON.stringify(body), {
-      status: response.status,
-      headers: response.headers,
-    })
-  }
-
+    },
+  })
   return response
 }
 
