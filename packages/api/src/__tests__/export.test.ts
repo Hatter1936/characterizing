@@ -36,4 +36,19 @@ describe('export', () => {
         expect(result.png).toBeDefined()
         expect(typeof result.png).toBe('string')
     }, 30000)
+
+    test('exportPdf возвращает pdf', async () => {
+        ctx.prisma.character.findUnique.mockResolvedValue({
+            id: 'character-id',
+            name: 'Test',
+            userId: 'user-id',
+        })
+        ctx.prisma.customField.findMany.mockResolvedValue([])
+
+        const result = await caller.character.exportPdf({ id: 'character-id' })
+
+        expect(result.success).toBe(true)
+        expect(result.pdf).toBeDefined()
+        expect(typeof result.pdf).toBe('string')
+        }, 30000)
 })

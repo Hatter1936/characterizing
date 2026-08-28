@@ -238,7 +238,7 @@ export const update = protectedProcedure.input(updateSchema).mutation( async ({ 
         where: { id: id }
     })
 
-    if (!updateCharacter || updateCharacter.userId != ctx.user.id) {
+    if (!updateCharacter || updateCharacter.userId !== ctx.user.id) {
         throw new TRPCError({
             code: 'NOT_FOUND',
             message: 'Character not found.'
@@ -280,7 +280,7 @@ export const remove = protectedProcedure.input(deleteSchema).mutation( async ({ 
         where: { id: input.id }
     })
 
-    if (!character || character.userId != ctx.user.id) {
+    if (!character || character.userId !== ctx.user.id) {
         throw new TRPCError({
             code: 'NOT_FOUND',
             message: 'Character not found.'
@@ -301,14 +301,14 @@ const exportSchema = z.object({
         .string({ required_error: 'ID id required.' }),
 })
 
-export const exportPng = protectedProcedure.input(exportSchema).query( async ({ input, ctx }) => {
+export const exportPng = protectedProcedure.input(exportSchema).mutation( async ({ input, ctx }) => {
     const { id } = input
 
     const character = await ctx.prisma.character.findUnique({
         where: { id: id }
     })
 
-    if (!character || character.userId != ctx.user.id) {
+    if (!character || character.userId !== ctx.user.id) {
         throw new TRPCError({
             code: 'NOT_FOUND',
             message: 'Character not found.'
@@ -329,14 +329,14 @@ export const exportPng = protectedProcedure.input(exportSchema).query( async ({ 
     }
 })
 
-export const exportPdf = protectedProcedure.input(exportSchema).query( async ({ input, ctx }) => {
+export const exportPdf = protectedProcedure.input(exportSchema).mutation( async ({ input, ctx }) => {
     const { id } = input
 
     const character = await ctx.prisma.character.findUnique({
         where: { id: id }
     })
 
-    if (!character || character.userId != ctx.user.id) {
+    if (!character || character.userId !== ctx.user.id) {
         throw new TRPCError({
             code: 'NOT_FOUND',
             message: 'Character not found.'
