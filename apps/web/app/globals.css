@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    body {
+        @apply bg-background text-text antialiased;
+    }
+    input {
+        @apply bg-light rounded-full border-2 border-solid border-dark;
+    }
+}
+
+@layer components {
+    .container {
+        @apply px-64;
+    }
+    .nav-link {
+        @apply text-light
+    }
+    .nav-div {
+        @apply flex items-center gap-8;
+    }
+    .nav-button {
+        @apply text-light bg-accent h-9 w-64 rounded-full border-2 border-solid border-dark flex items-center justify-center;
+    }
+}
