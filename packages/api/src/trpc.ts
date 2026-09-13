@@ -14,27 +14,29 @@ export const createContext = async (opts: FetchCreateContextFnOptions) => {
     const cookies = cookie.parse(rawCookies)
     const token = cookies.token
 
-    console.log('cookies: ', rawCookies)
-    console.log('token: ', token)
-
     // далее - проверяем jwt токен
-    if (token){
-        try {
-            const payload = jwt.verify(token, process.env.JWT_SECRET!) as {userId: string}
-            if (payload && payload.userId) {
-                user = await prisma.user.findUnique({ 
-                    where: { id: payload.userId } 
-                })
+        if (token){
+            try {
+                const payload = jwt.verify(token, process.env.JWT_SECRET!) as {userId: string}
+                if (payload && payload.userId) {
+                    const sessionData = await prisma.session.findUnique({
+                        where: { token: token },
+                        include: { user: true }
+                    })
+                    
+                    if (sessionData && sessionData.expiresAt > new Date()) {
+                        user = sessionData.user
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка верификации JWT: ', error)
             }
-        } catch (error) {
-            console.error('Ошибка верификации JWT: ', error)
         }
-    }
-    return { prisma, user, resHeaders }
+        return { prisma, user, resHeaders, token }
 }
 
 // тип процедуры
-type Context = Awaited<ReturnType<typeof createContext>>
+export type Context = Awaited<ReturnType<typeof createContext>>
 // контекст
 const t = initTRPC.context<Context>().create()
 // пока низнаю

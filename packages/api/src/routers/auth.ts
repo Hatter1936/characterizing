@@ -62,7 +62,6 @@ export const register = publicProcedure.input(registerSchema).mutation(async ({ 
     ctx.resHeaders.token = token
     return {
         success: true,
-        token,
         user: {
             id: newUser.id,
             email: newUser.email,
@@ -121,7 +120,6 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
     ctx.resHeaders.token = token
     return {
         success: true,
-        token,
         user: {
             id: userExist.id,
             email: userExist.email,
@@ -129,13 +127,16 @@ export const login = publicProcedure.input(loginSchema).mutation(async ({ input,
     }
 })
 
-const logoutSchema = z.object({
-    token: z.string()
-})
-
-export const logout = publicProcedure.input(logoutSchema).mutation(async ({ input, ctx }) => {
+export const logout = protectedProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.token) {
+        throw new TRPCError({
+            code: 'UNAUTHORIZED',
+            message: 'Incorrect token.'
+        })
+    }
+    
     const session = await ctx.prisma.session.findUnique({
-        where: { token: input.token }
+        where: { token: ctx.token }
     })
 
     if (!session) {
@@ -145,8 +146,10 @@ export const logout = publicProcedure.input(logoutSchema).mutation(async ({ inpu
         })
     }
 
+    ctx.resHeaders['Set-Cookie'] = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly'
+
     await ctx.prisma.session.delete({
-        where: { token: input.token }
+        where: { token: ctx.token }
     })
 
     return {
